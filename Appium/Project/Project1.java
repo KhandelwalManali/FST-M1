@@ -1,14 +1,10 @@
 package Project;
 
 import io.appium.java_client.AppiumBy;
-
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
-
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
@@ -19,9 +15,7 @@ import org.testng.annotations.Test;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
-
 
 public class Project1 {
     WebDriver driver;
@@ -30,64 +24,52 @@ public class Project1 {
     @BeforeClass
     public void setUp() throws MalformedURLException {
         // Desired Capabilities
-        UiAutomator2Options options = new UiAutomator2Options();
-        options.setPlatformName("android");
-        options.setAutomationName("UiAutomator2");
-        options.setAppPackage("com.google.android.apps.tasks");
-        options.setAppActivity(".ui.TaskListsActivity");
-        options.noReset();
+        UiAutomator2Options task = new UiAutomator2Options();
+        task.setPlatformName("android");
+        task.setAutomationName("UiAutomator2");
+        task.setAppPackage("com.google.android.apps.tasks");
+        task.setAppActivity(".ui.TaskListsActivity");
+        task.noReset();
 
-        // Server Address
-        URL serverURL = new URL("http://localhost:4723/wd/hub");
-        // Driver Initialization
-        driver = new AndroidDriver(serverURL, options);
+        // Appium Server URL
+        URL servrURL = new URL("http://localhost:4723/wd/hub");
+
+        // Initialize AndroidDriver
+        driver = new AndroidDriver(servrURL, task);
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
     }
 
-
     @Test
-    public void addTaskTest() throws InterruptedException {
+    public void addTaskTest() {
         wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId("Create new task")));
 
-        List<String> tasklist = new ArrayList<>();
-        tasklist.add("Complete Activity with Google Tasks");
-        tasklist.add("Complete Activity with Google Keep");
-        tasklist.add("Complete the second Activity Google Keep");
+        WebElement addTask = driver.findElement(AppiumBy.accessibilityId("Create new task"));
+        addTask.click();
 
-        for(int i = 0; i<tasklist.size(); i++){
-            wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId("Create new task")));
-            driver.findElement(AppiumBy.accessibilityId("Create new task")).click();
-            wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.xpath("//android.widget.EditText[@text='New task']")));
-            driver.findElement(AppiumBy.id("com.google.android.apps.tasks:id/add_task_title")).sendKeys(tasklist.get(i));
-            System.out.println(driver.findElement(AppiumBy.id("com.google.android.apps.tasks:id/add_task_title")).getText());
-            driver.findElement(AppiumBy.id("com.google.android.apps.tasks:id/add_task_done")).click();
-        }
+        WebElement newTask = driver.findElement(AppiumBy.xpath("//android.widget.EditText[@resource-id='com.google.android.apps.tasks:id/add_task_title']"));
+        WebElement save = driver.findElement(AppiumBy.xpath("//android.widget.Button[@text='Save']"));
 
-        // Assertion of the above three tasks
+        newTask.sendKeys("Complete Activity with Google Tasks");
+        save.click();
+        wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.xpath("//android.widget.Button[@content-desc='Add star']")));
+        addTask.click();
+        wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.xpath("//android.widget.Button[@content-desc='Set date/time']")));
+        driver.findElement(AppiumBy.id("com.google.android.apps.tasks:id/add_task_title")).sendKeys("Complete Activity with Google Keep");
+        driver.findElement(AppiumBy.id("com.google.android.apps.tasks:id/add_task_done")).click();
+        wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.xpath("//android.widget.Button[@content-desc='Add star']")));
+        addTask.click();
+        wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId("Add details")));
+        driver.findElement(AppiumBy.xpath("//android.widget.EditText[@text='New task']")).sendKeys("Complete the second Activity Google Keep");
+        driver.findElement(AppiumBy.xpath("//android.widget.Button[@resource-id='com.google.android.apps.tasks:id/add_task_done']")).click();
+        wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.xpath("//android.widget.Button[@content-desc='Add star']")));
+        List<WebElement> tasks = driver.findElements(AppiumBy.xpath("//android.support.v7.widget.RecyclerView[@resource-id='com.google.android.apps.tasks:id/tasks_list']//android.widget.TextView"));
+        Assert.assertEquals(tasks.size(), 3);
 
-        List<WebElement> tasks = driver.findElements(AppiumBy.id("//android.widget.TextView[@resource-id='com.google.android.apps.tasks:id/task_name']"));
-        for (WebElement taskName : tasks) {
-            System.out.println("Tasks Added - "+taskName.getText());
-        }
-
-       /* String result1 = driver.findElement(AppiumBy.xpath("//android.widget.TextView[@resource-id='com.google.android.apps.tasks:id/task_name']")).getText();
-        System.out.println(result1);
-        Assert.assertEquals(result1, "Complete the second Activity Google Keep");
-
-        String result2 = driver.findElement(AppiumBy.AndroidUIAutomator("text(\"Complete Activity with Google Keep\")")).getText();
-        System.out.println(result2);
-        Assert.assertEquals(result2, "Complete Activity with Google Keep");
-
-        String result3 = driver.findElement(AppiumBy.AndroidUIAutomator("text(\"Complete the second Activity Google Keep\")")).getText();
-        System.out.println(result3);
-        Assert.assertEquals(result3, "Complete the second Activity Google Keep");*/
     }
-
-
 
     @AfterClass
-    public void tearDown() {
-        //Close the app
+    public void closeApp() {
         driver.quit();
     }
+
 }

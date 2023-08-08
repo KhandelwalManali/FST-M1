@@ -1,23 +1,20 @@
 package Project;
 
-        import io.appium.java_client.AppiumBy;
+import io.appium.java_client.AppiumBy;
+import io.appium.java_client.android.AndroidDriver;
+import io.appium.java_client.android.options.UiAutomator2Options;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
-        import io.appium.java_client.android.AndroidDriver;
-        import io.appium.java_client.android.options.UiAutomator2Options;
-
-        import org.openqa.selenium.WebDriver;
-        import org.openqa.selenium.WebElement;
-
-        import org.openqa.selenium.support.ui.ExpectedConditions;
-        import org.openqa.selenium.support.ui.WebDriverWait;
-        import org.testng.annotations.AfterClass;
-        import org.testng.annotations.BeforeClass;
-        import org.testng.annotations.Test;
-
-        import java.net.MalformedURLException;
-        import java.net.URL;
-        import java.time.Duration;
-
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.Duration;
 
 public class Project2 {
     WebDriver driver;
@@ -26,53 +23,36 @@ public class Project2 {
     @BeforeClass
     public void setUp() throws MalformedURLException {
         // Desired Capabilities
-        UiAutomator2Options options = new UiAutomator2Options();
-        options.setPlatformName("android");
-        options.setAutomationName("UiAutomator2");
-        options.setAppPackage("com.google.android.keep");
-        options.setAppActivity(".activities.BrowseActivity");
-        options.noReset();
+        UiAutomator2Options task = new UiAutomator2Options();
+        task.setPlatformName("android");
+        task.setAutomationName("UiAutomator2");
+        task.setAppPackage("com.google.android.keep");
+        task.setAppActivity(".activities.BrowseActivity");
+        task.noReset();
 
-        // Server Address
-        URL serverURL = new URL("http://localhost:4723/wd/hub");
-        // Driver Initialization
-        driver = new AndroidDriver(serverURL, options);
+        // Appium Server URL
+        URL servrURL = new URL("http://localhost:4723/wd/hub");
+
+        // Initialize AndroidDriver
+        driver = new AndroidDriver(servrURL, task);
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
     }
 
-
     @Test
-    public void addTaskTest() {
+    public void addNoteTest() {
         wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId("New text note")));
         driver.findElement(AppiumBy.accessibilityId("New text note")).click();
-
-        wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.id("com.google.android.keep:id/edit_note_text")));
-        driver.findElement(AppiumBy.id("com.google.android.keep:id/edit_note_text")).sendKeys("Desc");
-
-        wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.id("com.google.android.keep:id/editable_title")));
-        driver.findElement(AppiumBy.id("com.google.android.keep:id/editable_title")).sendKeys("Tit");
-
+        wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.xpath("//android.widget.EditText[@resource-id='com.google.android.keep:id/edit_note_text']")));
+        driver.findElement(AppiumBy.id("com.google.android.keep:id/edit_note_text")).sendKeys("This is a test note");
+        wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.xpath("//android.widget.EditText[@resource-id='com.google.android.keep:id/editable_title']")));
+        driver.findElement(AppiumBy.id("com.google.android.keep:id/editable_title")).sendKeys("Note1");
         driver.findElement(AppiumBy.accessibilityId("Navigate up")).click();
-
-       /* WebElement addTask = driver.findElement(AppiumBy.xpath("//android.widget.EditText[@text='New task']"));
-        WebElement saveTask = driver.findElement(AppiumBy.xpath("//android.widget.Button[@text='Save']"));
-
-        addTask.sendKeys("Complete Activity with Google Tasks");
-        saveTask.click();
-        addTask.sendKeys("Complete Activity with Google Keep");
-        saveTask.click();
-        addTask.sendKeys("Complete the second Activity Google Keep");
-        saveTask.click();*/
-
-        //Assert.assertEquals(result, "10");
+        wait.until(ExpectedConditions.elementToBeClickable(AppiumBy.accessibilityId("New photo note")));
+        WebElement title = driver.findElement(AppiumBy.id("com.google.android.keep:id/index_note_title"));
+        Assert.assertEquals(title.getText(), "Note1");
     }
-
-
-
-   /* @AfterClass
-    public void tearDown() {
-        //Close the app
+    @AfterClass
+    public void closeApp() {
         driver.quit();
-    }*/
+    }
 }
-
